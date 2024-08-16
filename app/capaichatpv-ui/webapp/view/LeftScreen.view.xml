@@ -1,5 +1,5 @@
 <mvc:View xmlns:tnt="sap.tnt"
-    controllerName="capaichatui.controller.LeftScreen"
+    controllerName="capaichatpvui.controller.LeftScreen"
     xmlns:mvc="sap.ui.core.mvc"
     xmlns="sap.f"
     xmlns:m="sap.m"

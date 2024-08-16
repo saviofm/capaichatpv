@@ -1,5 +1,5 @@
 {
-    "name": "capaichat",
+    "name": "capaichatpv",
     "version": "1.0.0",
     "description": "A simple CAP project.",
     "repository": "<Add your repository here>",
@@ -33,14 +33,14 @@
     },
     "scripts": {
         "start": "cds-serve",
-        "watch-capaichat-ui": "cds watch --open capaichat-ui/webapp/index.html?sap-ui-xx-viewCache=false",
-        "undeploy": "cf undeploy capaichat --delete-services --delete-service-keys --delete-service-brokers",
+        "watch-capaichatpv-ui": "cds watch --open capaichatpv-ui/webapp/index.html?sap-ui-xx-viewCache=false",
+        "undeploy": "cf undeploy capaichatpv --delete-services --delete-service-keys --delete-service-brokers",
         "build": "rimraf resources mta_archives && mbt build --mtar archive",
         "deploy": "cf deploy mta_archives/archive.mtar --retries 1"
     },
     "cds": {
         "requires": {
-            "[dev]": {
+            "[hybrid]": {
                 "db": "hana",
                 "cap-llm-plugin": {
                     "impl": "cap-llm-plugin/srv/cap-llm-plugin.js"
@@ -53,13 +53,6 @@
                         "requestTimeout": 30000
                     }
                 },
-                "destination_sf": {
-                    "kind": "rest",
-                    "credentials": {
-                        "url": "<your-successfactors-base-url>",
-                        "requestTimeout": 30000
-                    }
-                },
                 "auth": {
                     "passport": {
                         "strategy": "mock",
@@ -68,8 +61,8 @@
                                 "ID": "JohnDole@tester.sap.com",
                                 "password": "initial"
                             },
-                            "dummy": {
-                                "ID": "dummy",
+                            "dummy@com": {
+                                "ID": "dummy@com",
                                  "password": "dummy"
                             }
                         }
@@ -92,8 +85,11 @@
                 }
             }
         },
+        "workspaces": [
+            "app/*"
+        ],
         "sapux": [
-            "app/capaichat-ui"
+            "app/capaichatpv-ui"
         ]
     }
 }

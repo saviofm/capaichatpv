@@ -24,8 +24,9 @@ entity Message {
     creation_time: Timestamp;
 }
 
-entity DocumentChunk
-{
+entity DocumentChunk: cuid,
+{ 
+    //fileID: Association to Files;
     text_chunk: LargeString;
     metadata_column: LargeString;
     embedding: Vector(3072);

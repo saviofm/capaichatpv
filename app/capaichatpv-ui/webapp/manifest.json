@@ -1,7 +1,7 @@
 {
   "_version": "1.59.0",
   "sap.app": {
-    "id": "capaichatui",
+    "id": "capaichatpvui",
     "type": "application",
     "i18n": "i18n/i18n.properties",
     "applicationVersion": {
@@ -88,7 +88,7 @@
       "i18n": {
         "type": "sap.ui.model.resource.ResourceModel",
         "settings": {
-          "bundleName": "capaichatui.i18n.i18n"
+          "bundleName": "capaichatpvui.i18n.i18n"
         }
       },
       "": {
@@ -120,7 +120,7 @@
       ]
     },
     "rootView": {
-      "viewName": "capaichatui.view.App",
+      "viewName": "capaichatpvui.view.App",
       "type": "XML",
       "async": true,
       "id": "App"
@@ -130,7 +130,7 @@
         "routerClass": "sap.f.routing.Router",
         "viewType": "XML",
         "async": true,
-        "viewPath": "capaichatui.view",
+        "viewPath": "capaichatpvui.view",
         "controlId": "flexibleColumnLayout",
         "transition": "slide"
       },
@@ -175,6 +175,6 @@
   },
   "sap.cloud": {
     "public": true,
-    "service": "aichat.app"
+    "service": "capaichatpv"
   }
 }

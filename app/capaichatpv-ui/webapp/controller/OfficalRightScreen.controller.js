@@ -4,7 +4,7 @@ sap.ui.define([
 ], function (Controller, JSONModel) {
     'use strict';
 
-    return Controller.extend("capaichatui.controller.OfficalRightScreen", {
+    return Controller.extend("capaichatpvui.controller.OfficalRightScreen", {
 
         onInit: function () {
 

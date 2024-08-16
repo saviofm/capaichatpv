@@ -1,5 +1,5 @@
 _schema-version: "3.1"
-ID: capaichat
+ID: capaichatpv
 description: A simple CAP project.
 version: 1.0.0
 parameters:
@@ -13,16 +13,16 @@ build-parameters:
 
 modules:
   # --------------------- SERVER MODULE -------------------------
-  - name: capaichat-srv
+  - name: capaichatpv-srv
     # -------------------------------------------------------------
     type: nodejs
     path: gen/srv
     properties:
       SAP_JWT_TRUST_ACL: '[{"clientid":"*","identityzone":"*"}]'
     requires:
-      - name: capaichat-auth
-      - name: capaichat-db
-      - name: capaichat-destination-service
+      - name: capaichatpv-xsuaa-service
+      - name: capaichatpv-db
+      - name: capaichatpv-destination-service
     provides:
       - name: srv-api
         properties:
@@ -34,79 +34,74 @@ modules:
       memory: 512M
     build-parameters:
       builder: npm
-      ignore:
-        - .env
-        - node_modules/
-        - default-env.json
+
 
   # -------------------- DB MODULE ------------------------------
-  - name: capaichat-db-deployer
+  - name: capaichatpv-db-deployer
     # -------------------------------------------------------------
     type: hdb
     path: gen/db
     requires:
-      - name: capaichat-db
+      - name: capaichatpv-db
     parameters:
       buildpack: nodejs_buildpack
-    build-parameters:
-      ignore:
-        - node_modules/
 
   # ------------------ DESTINATION CONTENT ----------------------
-  - name: capaichat-destination-content
+  - name: capaichatpv-destination-content
     # ------------------------------------------------------------
     type: com.sap.application.content
+    path: .
     requires:
-      - name: capaichat-destination-service
+      - name: capaichatpv-xsuaa-service
+        parameters:
+          service-key:
+            name: uaa_capaichatpv-key    
+      - name: capaichatpv-html5-host
+        parameters:
+          service-key:
+            name: capaichatpv_html5_host-key            
+      - name: capaichatpv-destination-service
         parameters:
           content-target: true
-      - name: capaichat-repo-host
-        parameters:
-          service-key:
-            name: capaichat-repo-host-key
-      - name: capaichat-auth
-        parameters:
-          service-key:
-            name: uaa_capaichat-key
     parameters:
       content:
         instance:
           destinations:
-            - Name: capaichat_repo_host
-              ServiceInstanceName: capaichat-html5-app-host-service
-              ServiceKeyName: capaichat-repo-host-key
-              sap.cloud.service: aichat.app
+            - Name: capaichatpv_html5_host
+              ServiceInstanceName: capaichatpv-html5-host-service
+              ServiceKeyName: capaichatpv_html5_host-key
+              sap.cloud.service: capaichatpv
             - Authentication: OAuth2UserTokenExchange
-              Name: capaichat
-              ServiceInstanceName: capaichat-xsuaa-service
-              ServiceKeyName: uaa_capaichat-key
-              sap.cloud.service: aichat.app
+              Name: capaichatpv_xsuaa
+              ServiceInstanceName: capaichatpv-xsuaa-service
+              ServiceKeyName: capaichatpv_xsuaa-key
+              sap.cloud.service: capaichatpv
           existing_destinations_policy: ignore
     build-parameters:
       no-source: true
 
   # ------------------ APPLICATION CONTENT ----------------------
-  - name: capaichat-app-content
+  - name: capaichatpv-html5-host
     # -------------------------------------------------------------
     type: com.sap.application.content
     path: .
     requires:
-      - name: capaichat-repo-host
+      - name: capaichatpv-html5-host
         parameters:
           content-target: true
     build-parameters:
       build-result: resources
       requires:
         - artifacts:
-            - capaichatui.zip
-          name: capaichatui
+            - capaichatpvui.zip
+          name: capaichatpvui
           target-path: resources/
 
   # ------------- APPLICATION: UI5 -------------------------
-  - name: capaichatui
+  - name: capaichatpvui
     # ------------------------------------------------------------
     type: html5
-    path: app/capaichat-ui
+    path: app/capaichatpv-ui
     build-parameters:
       build-result: dist
       builder: custom
@@ -116,67 +111,37 @@ modules:
       supported-platforms:
         []
 
-  # ------------------ App Router -------------------------------  
-  - name: capaichat-approuter
-    # -------------------------------------------------------------
-    type: approuter.nodejs
-    path: app/
-    parameters:
-      keep-existing-routes: true
-      disk-quota: 1024M
-      memory: 256M
-    build-parameters:
-      ignore:
-        - .env
-        - node_modules/
-        - default-env.json
-    requires:
-      - name: srv-api
-        group: destinations
-        properties:
-          name: srv-api # must be used in xs-app.json as well
-          url: ~{srv-url}
-          forwardAuthToken: true
-      - name: capaichat-auth
-    properties:
-      CORS:
-        - uriPattern: .
-          allowedMethods:
-            - GET
-            - POST
-          allowedOrigin:
-            - host: '*'
+  
 
 resources:
   # ------------------------------------------------------------
-  - name: capaichat-auth
+  - name: capaichatpv-xsuaa-service
     # ------------------------------------------------------------
     type: org.cloudfoundry.managed-service
     parameters:
       path: ./xs-security.json
       service: xsuaa
       service-plan: application
-      service-name: capaichat-xsuaa-service
-      config:
-        tenant-mode: dedicated
-        xsappname: capaichat-auth
+      service-name: capaichatpv-xsuaa-service
   # ------------------------------------------------------------
-  - name: capaichat-db
+  - name: capaichatpv-db
     # ------------------------------------------------------------
     type: com.sap.xs.hdi-container
     parameters:
       service: hana
+      service-key:
+      name: capaichatpv-db-key
       service-plan: hdi-shared
   # ------------------------------------------------------------
-  - name: capaichat-repo-host
+  - name: capaichatpv-html5-host
     # ------------------------------------------------------------
     type: org.cloudfoundry.managed-service
     parameters:
       service: html5-apps-repo
-      service-name: capaichat-html5-app-host-service
+      service-name: capaichatpv-html5-host-service
       service-plan: app-host
   # ------------------------------------------------------------
-  - name: capaichat-destination-service
+  - name: capaichatpv-destination-service
     # ------------------------------------------------------------
     type: org.cloudfoundry.managed-service
     requires:
@@ -196,7 +161,7 @@ resources:
                 HTML5.DynamicDestination: true
                 HTML5.ForwardAuthToken: true
                 HTML5.Timeout: 30000
-                Name: capaichat-srv-api
+                Name: capaichatpv-srv-api
                 ProxyType: Internet
                 Type: HTTP
                 URL: ~{srv-api/srv-url}
@@ -208,7 +173,7 @@ resources:
             HTML5.DynamicDestination: true
             HTML5.ForwardAuthToken: true
             HTML5.Timeout: 300000
-            Name: capaichat
+            Name: capaichatpv
             ProxyType: Internet
             Type: HTTP
             URL: ~{srv-api/srv-url}
@@ -218,7 +183,7 @@ resources:
             HTML5.DynamicDestination: true
             HTML5.ForwardAuthToken: true
             HTML5.Timeout: 300000
-            Name: capaichat_odata
+            Name: capaichatpv_odata
             ProxyType: Internet
             Type: HTTP
             URL: ~{srv-api/srv-url}/odata/v4/chat
@@ -231,5 +196,5 @@ resources:
           existing_destinations_policy: update  
         version: 1.0.0
       service: destination
-      service-name: capaichat-destination-service
+      service-name: capaichatpv-destination-service
       service-plan: lite

@@ -11,7 +11,7 @@ sap.ui.define([
      Filter, FilterOperator, MessageToast, JSONModel, MessageBox) {
     'use strict';
     
-    return Controller.extend("capaichatui.controller.LeftScreen", {
+    return Controller.extend("capaichatpvui.controller.LeftScreen", {
 
         onInit: function(){
 
@@ -108,7 +108,7 @@ sap.ui.define([
         onUploadFileBtnSelect: function(oEvent){
 
             this.fileUploadFragment ??= this.loadFragment({
-                name: "capaichatui.view.FileUploading"
+                name: "capaichatpvui.view.FileUploading"
             });
 
             this.fileUploadFragment.then((oFragment) => oFragment.open());
@@ -122,7 +122,7 @@ sap.ui.define([
         onManageFileBtnSelect: function(){
 
             this.fileManagementFragment ??= this.loadFragment({
-                name: "capaichatui.view.FileManagement"
+                name: "capaichatpvui.view.FileManagement"
             });
 
             this.fileManagementFragment.then((oFragment) => oFragment.open());

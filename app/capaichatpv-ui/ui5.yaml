@@ -1,6 +1,6 @@
 specVersion: "2.5"
 metadata:
-  name: capaichatui
+  name: capaichatpvui
 type: application
 framework:
   name: OpenUI5
