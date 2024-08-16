@@ -81,7 +81,7 @@ modules:
       no-source: true
 
   # ------------------ APPLICATION CONTENT ----------------------
-  - name: capaichatpv-html5-host
+  - name: capaichatpv-app-content
     # -------------------------------------------------------------
     type: com.sap.application.content
     path: .

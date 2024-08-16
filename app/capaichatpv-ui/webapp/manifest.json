@@ -36,7 +36,7 @@
     "crossNavigation": {
       "inbounds": {
         "Chat-Display": {
-          "semanticObject": "Chat",
+          "semanticObject": "ChatAI",
           "action": "Display",
           "title": "{{flpTitle}}",
           "subTitle": "{{flpSubtitle}}",
