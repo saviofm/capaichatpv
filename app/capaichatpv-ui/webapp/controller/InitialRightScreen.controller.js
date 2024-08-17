@@ -39,7 +39,7 @@ sap.ui.define([
                 displayName: "Dummy User (dummy@com)"
             }; 
             var oModel = new JSONModel();
-            /*            
+                       
             const url = this.getBaseURL() + "/user-api/currentUser";
             
   
@@ -55,10 +55,10 @@ sap.ui.define([
                 this.getView().setModel(oModel, "userInfo");
             })
             .catch(()=>{    
-            */           
+                      
                 oModel.setData(mock);
                 this.getView().setModel(oModel, "userInfo");
-            //});
+            });
         },
 
         getBaseURL: function () {

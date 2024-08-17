@@ -17,7 +17,7 @@
     },
     "dataSources": {
       "mainService": {
-        "uri": "/odata/v4/chat/",
+        "uri": "odata/v4/chat/",
         "type": "OData",
         "settings": {
           "annotations": [],
@@ -25,7 +25,7 @@
         }
       },
       "fileService":{
-        "uri": "/odata/v4/embedding-storage/",
+        "uri": " odata/v4/embedding-storage/",
         "type": "OData",
         "settings": {
           "annotations": [],

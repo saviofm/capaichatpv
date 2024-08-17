@@ -12,39 +12,6 @@ build-parameters:
         - npx cds build --production
 
 modules:
-  # --------------------- SERVER MODULE -------------------------
-  - name: capaichatpv-srv
-    # -------------------------------------------------------------
-    type: nodejs
-    path: gen/srv
-    properties:
-      SAP_JWT_TRUST_ACL: '[{"clientid":"*","identityzone":"*"}]'
-    requires:
-      - name: capaichatpv-xsuaa-service
-      - name: capaichatpv-db
-      - name: capaichatpv-destination-service
-    provides:
-      - name: srv-api
-        properties:
-          srv-url: ${default-url}
-    parameters:
-      buildpack: nodejs_buildpack
-      keep-existing-routes: true
-      disk-quota: 1024M
-      memory: 512M
-    build-parameters:
-      builder: npm
-
-
-  # -------------------- DB MODULE ------------------------------
-  - name: capaichatpv-db-deployer
-    # -------------------------------------------------------------
-    type: hdb
-    path: gen/db
-    requires:
-      - name: capaichatpv-db
-    parameters:
-      buildpack: nodejs_buildpack
 
   # ------------------ DESTINATION CONTENT ----------------------
   - name: capaichatpv-destination-content
@@ -52,20 +19,17 @@ modules:
     type: com.sap.application.content
     path: .
     requires:
-      - name: capaichatpv-xsuaa-service
-        parameters:
-          service-key:
-            name: uaa_capaichatpv-key    
-      - name: capaichatpv-html5-host
-        parameters:
-          service-key:
-            name: capaichatpv_html5_host-key            
-      - name: capaichatpv-destination-service
-        parameters:
-          content-target: true
+    - name: capaichatpv-xsuaa-service
+      parameters:
+        service-key:
+          name: capaichatpv_xsuaa-key
+    - name: capaichatpv-html5-host          
+    - name: capaichatpv-destination-service
+      parameters:
+        content-target: true
     parameters:
       content:
-        instance:
+        subaccount:
           destinations:
             - Name: capaichatpv_html5_host
               ServiceInstanceName: capaichatpv-html5-host-service
@@ -76,9 +40,53 @@ modules:
               ServiceInstanceName: capaichatpv-xsuaa-service
               ServiceKeyName: capaichatpv_xsuaa-key
               sap.cloud.service: capaichatpv
-          existing_destinations_policy: ignore
+          existing_destinations_policy: update
     build-parameters:
       no-source: true
+
+  # --------------------- SERVER MODULE -------------------------
+  - name: capaichatpv-srv
+    # -------------------------------------------------------------
+    type: nodejs
+    path: gen/srv
+    properties:
+      SAP_JWT_TRUST_ACL: '[{"clientid":"*","identityzone":"*"}]'
+    requires:
+    - name: capaichatpv-db
+    - name: capaichatpv-xsuaa-service
+    - name: capaichatpv-destination-service
+      parameters:
+        content-target: true      
+    provides:
+      - name: srv-api
+        properties:
+          srv-url: ${default-url}
+    parameters:
+      buildpack: nodejs_buildpack
+      disk-quota: 1024M
+      memory: 512M
+    build-parameters:
+      builder: npm
+      ignore:
+        - .env
+        - node_modules/
+        - default-env.json
+
+  # -------------------- DB MODULE ------------------------------
+  - name: capaichatpv-db-deployer
+    # -------------------------------------------------------------
+    type: hdb
+    path: gen/db
+    requires:
+      - name: capaichatpv-db
+      - name: capaichatpv-xsuaa-service      
+    parameters:
+      buildpack: nodejs_buildpack
+    build-parameters:
+      ignore:
+        - node_modules/
+
+
 
   # ------------------ APPLICATION CONTENT ----------------------
   - name: capaichatpv-app-content
@@ -111,18 +119,32 @@ modules:
       supported-platforms:
         []
 
-  
+
+    # ------------------ App Router -------------------------------  
+  - name: capaichatpv-approuter
+    # -------------------------------------------------------------
+    type: approuter.nodejs
+    path: app/
+    parameters:
+      keep-existing-routes: true
+      disk-quota: 512M
+      memory: 96M
+    build-parameters:
+      ignore:
+        - .env
+        - node_modules/
+        - default-env.json
+    requires:
+      - name: srv-api
+        group: destinations
+        properties:
+          name: srv-api # must be used in xs-app.json as well
+          url: ~{srv-url}
+          forwardAuthToken: true
+      - name: capaichatpv-xsuaa-service
+   
 
 resources:
-  # ------------------------------------------------------------
-  - name: capaichatpv-xsuaa-service
-    # ------------------------------------------------------------
-    type: org.cloudfoundry.managed-service
-    parameters:
-      path: ./xs-security.json
-      service: xsuaa
-      service-plan: application
-      service-name: capaichatpv-xsuaa-service
   # ------------------------------------------------------------
   - name: capaichatpv-db
     # ------------------------------------------------------------
@@ -132,6 +154,16 @@ resources:
       service-key:
       name: capaichatpv-db-key
       service-plan: hdi-shared
+  # ------------------------------------------------------------
+  - name: capaichatpv-xsuaa-service
+    # ------------------------------------------------------------
+    type: org.cloudfoundry.managed-service
+    parameters:
+      path: ./xs-security.json
+      service: xsuaa
+      service-plan: application
+      service-name: capaichatpv-xsuaa-service
+
   # ------------------------------------------------------------
   - name: capaichatpv-html5-host
     # ------------------------------------------------------------
@@ -167,33 +199,33 @@ resources:
                 URL: ~{srv-api/srv-url}
             existing_destinations_policy: update
           subaccount:
-          destinations:
-          - Authentication: NoAuthentication
-            Description: CAP AI Chat Destination
-            HTML5.DynamicDestination: true
-            HTML5.ForwardAuthToken: true
-            HTML5.Timeout: 300000
-            Name: capaichatpv
-            ProxyType: Internet
-            Type: HTTP
-            URL: ~{srv-api/srv-url}
-          - AppgyverEnabled: true
-            Authentication: NoAuthentication
-            Description: CAP AI Chat Odata Chat
-            HTML5.DynamicDestination: true
-            HTML5.ForwardAuthToken: true
-            HTML5.Timeout: 300000
-            Name: capaichatpv_odata
-            ProxyType: Internet
-            Type: HTTP
-            URL: ~{srv-api/srv-url}/odata/v4/chat
-            WebIDEEnabled: true
-            WebIDEUsage: odata_gen
-            sap.applicationdevelopment.actions.enabled: true
-            sap.build.usage: CAP
-            sap.processautomation.enabled: true
-            MobileEnabled: true
-          existing_destinations_policy: update  
+            destinations:
+            - Authentication: NoAuthentication
+              Description: CAP AI Chat Destination
+              HTML5.DynamicDestination: true
+              HTML5.ForwardAuthToken: true
+              HTML5.Timeout: 300000
+              Name: capaichatpv
+              ProxyType: Internet
+              Type: HTTP
+              URL: ~{srv-api/srv-url}
+            - AppgyverEnabled: true
+              Authentication: NoAuthentication
+              Description: CAP AI Chat Odata Chat
+              HTML5.DynamicDestination: true
+              HTML5.ForwardAuthToken: true
+              HTML5.Timeout: 300000
+              Name: capaichatpv_odata
+              ProxyType: Internet
+              Type: HTTP
+              URL: ~{srv-api/srv-url}/odata/v4/chat
+              WebIDEEnabled: true
+              WebIDEUsage: odata_gen
+              sap.applicationdevelopment.actions.enabled: true
+              sap.build.usage: CAP
+              sap.processautomation.enabled: true
+              MobileEnabled: true
+            existing_destinations_policy: update  
         version: 1.0.0
       service: destination
       service-name: capaichatpv-destination-service

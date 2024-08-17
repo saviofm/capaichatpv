@@ -19,6 +19,11 @@
       "cacheControl": "no-cache, no-store, must-revalidate"
     },
     {
+      "source": "^/user-api/currentUser$",
+      "target": "/currentUser",
+      "service": "sap-approuter-userapi"
+    },
+    {
       "source": "^/resources/(.*)$",
       "target": "/resources/$1",
       "authenticationType": "none",

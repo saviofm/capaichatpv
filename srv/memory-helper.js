@@ -124,7 +124,7 @@ async function getConversationSummarization(userQuestion){
             },
             {
                 role: "assistant",
-                content: "Gere um breve resumo sobre a entrada do usuário, não importando se a entrada do usuário é uma pergunta ou não. O breve resumo deve conter somente o que foi escrito e deve poder ser usado como título da conversa."
+                content: "Gere um breve resumo de 50 caracteres sobre a entrada do usuário, não importando se a entrada do usuário é uma pergunta ou não. O breve resumo deve conter somente o que foi escrito e deve poder ser usado como título da conversa."
             }
           ],
           temperature: 0.0,
