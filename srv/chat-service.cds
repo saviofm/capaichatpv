@@ -1,4 +1,4 @@
-using {sap.tisce.demo as db} from '../db/schema';
+using {capaichatpv as db} from '../db/schema';
 
 service ChatService @(requires: 'authenticated-user') {
 

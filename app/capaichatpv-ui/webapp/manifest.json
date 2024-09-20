@@ -25,7 +25,7 @@
         }
       },
       "fileService":{
-        "uri": " odata/v4/embedding-storage/",
+        "uri": "odata/v4/embedding-storage/",
         "type": "OData",
         "settings": {
           "annotations": [],
@@ -40,6 +40,8 @@
           "action": "Display",
           "title": "{{flpTitle}}",
           "subTitle": "{{flpSubtitle}}",
+          "icon": "sap-icon://da",
+          "info": "Private",    
           "signature": {
             "parameters": {},
             "additionalParameters": "allowed"

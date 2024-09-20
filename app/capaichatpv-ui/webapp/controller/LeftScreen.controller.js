@@ -299,6 +299,7 @@ sap.ui.define([
             this.byId("fileManagementFragment").setBusy(true);
             this.requestEmbeddingGeneration(pdfFileID)
                 .then((oReturn) => {
+                    this.byId("uploadSetWithTable").getBinding("items").refresh();
                     this.byId("fileManagementFragment").setBusy(false);
                     MessageToast.show("Vetorização realizada com sucesso.");
                 })
@@ -384,6 +385,8 @@ sap.ui.define([
                     this.byId("fileManagementFragment").setBusy(false);	
                     MessageToast.show(`File ${fileName} with ID ${fileID} deletion failed`);
                 });
+
+                
         },
 
         requestFileDelete: function(fileID){
@@ -409,13 +412,15 @@ sap.ui.define([
             this.byId("fileManagementFragment").setBusy(true);
             this.requestEmbeddingDelete()
             .then((result) => {
-                this.byId("fileManagementFragment").setBusy(false);
+                this.byId("uploadSetWithTable").getBinding("items").refresh();
+                this.byId("fileManagementFragment").setBusy(false);            
                 MessageToast.show(`All embeddings successfully deleted.`);			
             })
             .catch((error) => {
 
                 console.log(error.message);
-                this.byId("fileManagementFragment").setBusy(false);	
+                this.byId("uploadSetWithTable").getBinding("items").refresh();
+                this.byId("fileManagementFragment").setBusy(false);	          
                 MessageToast.show(`Embeddings deletion failed.`);
             });
         },

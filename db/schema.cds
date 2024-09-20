@@ -1,4 +1,4 @@
-namespace sap.tisce.demo;
+namespace capaichatpv;
 
 using {
     cuid,
@@ -26,7 +26,7 @@ entity Message {
 
 entity DocumentChunk: cuid,
 { 
-    //fileID: Association to Files;
+    file: Association to Files;
     text_chunk: LargeString;
     metadata_column: LargeString;
     embedding: Vector(3072);
@@ -40,5 +40,6 @@ entity Files: cuid, managed{
     mediaType: String;
     fileName: String;
     size: String;
+    embedded: Boolean;
 }
 

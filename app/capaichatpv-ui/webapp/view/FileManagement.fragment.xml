@@ -98,6 +98,11 @@
                         <m:Label id="labelForActionButton" text="{i18n>generateEmeddings}" />
                     </header>
                 </Column>
+                <Column id="Vetorized" importance="High" >
+                    <header>
+                        <m:Label id="labelForEmbedded" text="{i18n>Embedded}" />
+                    </header>
+                </Column>
             </columns>
 
             <!-- Items aggregation with template UploadSetwithTableItem definition for each row -->
@@ -134,6 +139,8 @@
                             icon="sap-icon://begin"
                             press=".onGenerateVectorBtnClick"
                         />
+                         <m:CheckBox selected="{files>embedded}" enabled="false"/>
+
                     </cells>
                 </UploadSetwithTableItem>
             </items>

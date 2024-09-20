@@ -9,30 +9,33 @@ function getCurrentTimestamp() {
 
 // Helper method to insert the messages and update the latest conversation timestamp in db
 async function insertMessage(messageEntity, messageRecord, conversationId, conversationEntity, messageTime) {
-
     console.log(`Inserting new message for conversation id: ${conversationId}`);
     const messageInsertionStatus = await INSERT.into(messageEntity).entries([messageRecord]);
-    if (!messageInsertionStatus) { throw new Error("Insertion of message into db failed!"); };
+    if (!messageInsertionStatus) { 
+        throw new Error("Insertion of message into db failed!");
+     };
 
     console.log(`Updating the time for conversation id: ${conversationId}`);
     const updateConversationStatus = await UPDATE(conversationEntity).set`last_update_time = ${messageTime}`.where`cID = ${conversationId}`;
-    if (updateConversationStatus !== 1) { throw new Error("Updating the conversation time failed!"); }
+    if (updateConversationStatus !== 1) { 
+        throw new Error("Updating the conversation time failed!"); 
+    }
 }
 
 // Helper method to handle conversation memory in HANA CLoud before RAG LLM call.
-async function handleMemoryBeforeRagCall(conversationId, messageId, message_time, user_id, user_query, Conversation, Message) {
+async function storeRetrieveMessages(conversationId, messageId, message_time, user_id, user_query, Conversation, Message) {
     try {
 
-        const memoryContext = [];
-
+        let memoryContext = [];
         // Check if conversation exists in the db
         const isConversationPresent = await SELECT.from(Conversation).where({ "cID": conversationId });
-
         // If conversation is present, select messages from db and store it in memory context obj
+
         if (isConversationPresent.length > 0) {
             console.log(`Retrieving messages for conversation id: ${conversationId}`);
-
             const messageSelectStmt = await SELECT.from(Message).where({ "cID_cID": conversationId }).orderBy('creation_time');
+            //parse the memory context for different models
+
             if (messageSelectStmt.length > 0) {
                 messageSelectStmt.forEach(message => {
                     memoryContext.push({
@@ -41,25 +44,26 @@ async function handleMemoryBeforeRagCall(conversationId, messageId, message_time
                     });
                 });
             }
-            else { throw new Error(`Messages corresponding to conversation id: ${conversationId} not present!`) }
+            else { 
+                throw new Error(`Messages corresponding to conversation id: ${conversationId} not present!`) ;
+            }
         }
 
         // If conversation is not present, insert the conversation into db
         else {
-
-            const conversationTitle = await getConversationSummarization(user_query);
-
-            console.log(`Inserting new conversation for conversation id: ${conversationId}`);
-            const currentTimestamp = getCurrentTimestamp()
+             console.log(`Inserting new conversation for conversation id: ${conversationId}`);
+            const currentTimestamp = getCurrentTimestamp();
             const conversationEntry = {
                 "cID": conversationId,
                 "userID": user_id,
                 "creation_time": currentTimestamp,
                 "last_update_time": currentTimestamp,
-                "title": conversationTitle,
-            }
-            const conversationInsertStatus = await INSERT.into(Conversation).entries([conversationEntry])
-            if (!conversationInsertStatus) { throw new Error("Insertion of conversation into db failed!"); }
+                "title": user_query,
+            };
+            const conversationInsertStatus = await INSERT.into(Conversation).entries([conversationEntry]);
+            if (!conversationInsertStatus) { 
+                throw new Error("Insertion of conversation into db failed!"); 
+            };
         }
 
         // In both cases, insert the message into db
@@ -83,7 +87,7 @@ async function handleMemoryBeforeRagCall(conversationId, messageId, message_time
 }
 
 // Helper method to handle conversation memory in HANA CLoud after RAG LLM call.
-async function handleMemoryAfterRagCall(conversationId, message_time, chatRagResponse, Message, Conversation) {
+async function storeModelResponse(conversationId, message_time, chatRagResponse, Message, Conversation) {
     try {
         const aiMessageRecord = {
             "cID_cID": conversationId,
@@ -104,44 +108,7 @@ async function handleMemoryAfterRagCall(conversationId, message_time, chatRagRes
 
 }
 
-async function getConversationSummarization(userQuestion){
-    
-    const genAIHubConfig = cds.env.requires?.GENERATIVE_AI_HUB,
-          resourceGroupname = genAIHubConfig.CHAT_MODEL_RESOURCE_GROUP,
-          modelDeploymentUri = genAIHubConfig.CHAT_MODEL_DEPLOYMENT_URL,
-          apiVersion = genAIHubConfig.CHAT_MODEL_API_VERSION,
-          genAIDestName = genAIHubConfig.CHAT_MODEL_DESTINATION_NAME;
-
-    const reqHeaders = {
-        "Content-Type": "application/json",
-        "AI-Resource-Group": resourceGroupname, 
-    };
-    const reqPayload = {
-        messages: [
-            {
-              role: "user",
-              content: userQuestion,
-            },
-            {
-                role: "assistant",
-                content: "Gere um breve resumo de 50 caracteres sobre a entrada do usuário, não importando se a entrada do usuário é uma pergunta ou não. O breve resumo deve conter somente o que foi escrito e deve poder ser usado como título da conversa."
-            }
-          ],
-          temperature: 0.0,
-    };
-
-    const genAISrv = await cds.connect.to(genAIDestName);
-
-    const response = await genAISrv.send({
-        query: `POST ${modelDeploymentUri}/chat/completions?api-version=${apiVersion}`,
-        headers: reqHeaders,
-        data: reqPayload,
-    });
-
-    return response.choices[0].message.content;
-}
-
 module.exports = {
-    handleMemoryBeforeRagCall,
-    handleMemoryAfterRagCall
+    storeRetrieveMessages,
+    storeModelResponse
 };
