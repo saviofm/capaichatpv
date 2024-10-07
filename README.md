@@ -7,7 +7,7 @@ Esta aplicação de exemplo CAP usa o Plugin CAP LLM para simplificar o processo
 
 1. [Crie uma instância do SAP AI Core](https://help.sap.com/docs/sap-ai-core/sap-ai-core-service-guide/create-service-instance) e certifique-se de escolher o plano de serviço estendido para ativar o Generative AI Hub e continue criando uma Chave de Serviço.
 
-2. [Crie deployments](https://help.sap.com/docs/sap-ai-core/sap-ai-core-service-guide/create-deployment-for-generative-ai-model-in-sap-ai-core) para um modelo que suporte ChatCompletion (por exemplo, gpt-35-turbo ou gpt-4) e um modelo de embeddings (text-embedding-ada-002) e anote os IDs de Deployment de cada um. Todos os modelos disponíveis estão listados aqui.
+2. [Crie deployments](https://help.sap.com/docs/sap-ai-core/sap-ai-core-service-guide/create-deployment-for-generative-ai-model-in-sap-ai-core) para um modelo que suporte ChatCompletion (por exemplo, gpt-35-turbo ou gpt-4) e um modelo de embeddings (text-embedding-3-large) e anote os IDs de Deployment de cada um. Todos os modelos disponíveis estão listados aqui.
 
 3. [Crie um Destination](https://help.sap.com/docs/btp/sap-business-technology-platform/create-destination) para o Generative AI Hub no SAP BTP Cockpit da sua subconta, baseado na Chave de Serviço do SAP AI Core que você criou no passo anterior:
 
@@ -27,11 +27,7 @@ HTML5.DynamicDestination: true
 
 4. [Crie o SAP HANA Cloud](https://help.sap.com/docs/HANA_CLOUD_ALIBABA_CLOUD/683a53aec4fc408783bbb2dd8e47afeb/7d4071a49c204dfc9e542c5e47b53156.html) com Vector Engine (QRC 1/2024 ou posterior).
 
-5. Configure os detalhes de conexão do Generative AI Hub e SuccessFactors.
-
-Consulte [detalhes do cabeçalho de autorização do SuccessFactors](https://help.sap.com/docs/SAP_SUCCESSFACTORS_PLATFORM/d599f15995d348a1b45ba5603e2aba9b/5c8bca0af1654b05a83193b2922dcee2.html).
-
-Por exemplo, no arquivo `.cdsrc.json`. Consulte a [documentação](https://help.sap.com/docs/sap-ai-core/sap-ai-core-service-guide/create-deployment-for-generative-ai-model-in-sap-ai-core) para mais detalhes.
+5. Configure os detalhes de conexão do Generative AI Hub:
 
 {
     "cdsc": {
@@ -40,29 +36,33 @@ Por exemplo, no arquivo `.cdsrc.json`. Consulte a [documentação](https://help.
         }
     },
     "requires":{
-        "GENERATIVE_AI_HUB": {
-            "CHAT_MODEL_DESTINATION_NAME": "AICoreAzureOpenAIDestination",
-            "CHAT_MODEL_DEPLOYMENT_URL": "<CHAT_MODEL_DEPLOYMENT_URL> . Por exemplo: /v2/inference/deployments/<deployment-id>",
-            "CHAT_MODEL_RESOURCE_GROUP": "<CHAT_MODEL_RESOURCE_GROUP>",
-            "CHAT_MODEL_API_VERSION": "<CHAT_MODEL_API_VERSION>",
-            "EMBEDDING_MODEL_DESTINATION_NAME": "AICoreAzureOpenAIDestination",
-            "EMBEDDING_MODEL_DEPLOYMENT_URL": "<CHAT_MODEL_DEPLOYMENT_URL>. Por exemplo: /v2/inference/deployments/<deployment-id>",
-            "EMBEDDING_MODEL_RESOURCE_GROUP": "default",
-            "EMBEDDING_MODEL_API_VERSION": "<EMBEDDING_MODEL_API_VERSION>"
-        },
-        "AICoreAzureOpenAIDestination": {
-            "kind": "rest",
-            "credentials": {
-              "destination": "<destination-name-created-in-step-3>",
-              "requestTimeout": "300000"
+        "gen-ai-hub": {
+            "chat": {
+                "destinationName": "GenAIHubDestination",
+                "deploymentUrl": "<CHAT_MODEL_DEPLOYMENT_URL> . Por exemplo: /v2/inference/deployments/<deployment-id>",
+                "resourceGroup": "<CHAT_MODEL_RESOURCE_GROUP>",
+                "apiVersion": "<CHAT_MODEL_API_VERSION>",
+                "modelName": "<CHAT_MODEL_NAME>" . POR EXEMPLO gpt-4o
+            },
+            "embedding": {
+                "destinationName": "GenAIHubDestination",
+                "deploymentUrl": "<EMBEDDING_MODEL_DEPLOYMENT_URL> . Por exemplo: /v2/inference/deployments/<deployment-id>",
+                "resourceGroup": "<EMBEDDING_MODEL_RESOURCE_GROUP>",
+                "apiVersion": "<EMBEDDING_MODEL_API_VERSION>"
+                "modelName": "<EMBEDDING_MODEL_NAME>" . POR EXEMPLO text-embedding-3-large"
             }
         },
-        "SUCCESS_FACTORS_CREDENTIALS": {
-            "AUTHORIZATION_HEADER": "<AUTHORIZATION_HEADER>",
-            "USER_ID": "<USER_ID>"
+        "GenAIHubDestination": {
+            "kind": "rest",
+            "credentials": {
+              "destination": "GENERATIVE_AI_HUB",
+              "requestTimeout": "300000"
+            }
         }
     }
 }
+
+
 
 ## Começando
 
@@ -73,21 +73,6 @@ Por exemplo, no arquivo `.cdsrc.json`. Consulte a [documentação](https://help.
 
 - Instale os módulos node usando `npm i`
 
-## Testes Híbridos
-
-- Vincule os seguintes serviços à aplicação:
-    - hana cloud
-    - destination service
-
-- Construa os artefatos e implante no HANA:
-
-`cds build --production`
-`cds deploy --to hana:<hana-service-instance>`
-
-- Construa o servidor e execute a aplicação:
-
-`cds build`
-`cds watch --profile dev`
 
 ## Implantação no SAP BTP:
 
@@ -100,7 +85,23 @@ Por exemplo, no arquivo `.cdsrc.json`. Consulte a [documentação](https://help.
 mbt build
 cf deploy mta_archives/<mtar_filename>
 
+
+## Testes Híbridos
+
+- Vincule os seguintes serviços à aplicação:
+    - hana cloud
+`cds bind -2 capaichatbuildapps-db`       
+    - destination service
+`cds bind -2 capaichatbuildapps-destination-service`   
+
+
+## Inicia a aplicação de forma hibrida
+`cds watch --profile hybrid`
+
+
+
 ## Como usar a aplicação:
 
 - Faça upload do documento de política e gere embeddings pela UI.
 - Use a interface de chat para recuperar respostas às perguntas.
+- certifique que o documento nao tenha caracteres especiais ou seja maior que 30caracteres
