@@ -11,24 +11,26 @@ Esta aplicação de exemplo CAP usa o Plugin CAP LLM para simplificar o processo
 
 3. [Crie um Destination](https://help.sap.com/docs/btp/sap-business-technology-platform/create-destination) para o Generative AI Hub no SAP BTP Cockpit da sua subconta, baseado na Chave de Serviço do SAP AI Core que você criou no passo anterior:
 
-Nome: GENERATIVE_AI_HUB
-Descrição: Serviço implantado no SAP AI Core (hub de IA generativa)
-URL: <AI-API-OF-AI-CORE-SERVICE-KEY>/v2 # certifique-se de adicionar /v2!
-Tipo: HTTP
+```
+Name: GENERATIVE_AI_HUB
+Description: SAP AI Core deployed service (generative AI hub)
+URL: <AI-API-OF-AI-CORE-SERVICE-KEY>/v2 # make sure to add /v2!
+Type: HTTP
 ProxyType: Internet
 Authentication: OAuth2ClientCredentials
 tokenServiceURL: <TOKEN-SERVICE-URL-OF-AI-CORE-SERVICE-KEY>/oauth/token
 clientId: <YOUR-CLIENT-ID-OF-AI-CORE-SERVICE-KEY>
 clientSecret: <YOUR-CLIENT-SECRET-OF-AI-CORE-SERVICE-KEY>
-# Propriedades adicionais:
-URL.headers.AI-Resource-Group: default # ajuste se necessário
+# Additional Properties:
+URL.headers.AI-Resource-Group: default # adjust if necessary
 URL.headers.Content-Type: application/json
 HTML5.DynamicDestination: true
+```
 
 4. [Crie o SAP HANA Cloud](https://help.sap.com/docs/HANA_CLOUD_ALIBABA_CLOUD/683a53aec4fc408783bbb2dd8e47afeb/7d4071a49c204dfc9e542c5e47b53156.html) com Vector Engine (QRC 1/2024 ou posterior).
 
-5. Configure os detalhes de conexão do Generative AI Hub:
-
+5. Crie o arquivo ".cdsrc.json" e Configure os detalhes de conexão do Generative AI Hub:
+```
 {
     "cdsc": {
         "beta": {
@@ -61,7 +63,7 @@ HTML5.DynamicDestination: true
         }
     }
 }
-
+```
 
 
 ## Começando
