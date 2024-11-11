@@ -92,9 +92,9 @@ cf deploy mta_archives/<mtar_filename>
 
 - Vincule os seguintes serviços à aplicação:
     - hana cloud
-`cds bind -2 capaichatbuildapps-db`       
+`cds bind -2 capaichatpv-db`       
     - destination service
-`cds bind -2 capaichatbuildapps-destination-service`   
+`cds bind -2 capaichatpv-destination-service`   
 
 
 ## Inicia a aplicação de forma hibrida
